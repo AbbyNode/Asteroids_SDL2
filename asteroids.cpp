@@ -32,6 +32,12 @@ void err(string name) {
 	printf("Error | %s |\n%s", name.c_str(), SDL_GetError());
 }
 
+void err_img(string name) {
+	printf("Error | %s |\n%s", name.c_str(), IMG_GetError());
+}
+
+//
+
 bool init() {
 	bool success = true;
 
@@ -45,12 +51,20 @@ bool init() {
 			err("Window Create");
 		}
 		else {
-			gScreenSurface = SDL_GetWindowSurface(gWindow);
+			int imgFlags = IMG_INIT_PNG;
+			if (!(IMG_Init(imgFlags) & imgFlags)) {
+				err_img("SDL Img Init");
+			}
+			else {
+				gScreenSurface = SDL_GetWindowSurface(gWindow);
+			}
 		}
 	}
 
 	return success;
 }
+
+//
 
 int getImgIndex(KeyPressSurfaces img) {
 	int index = 0;
@@ -78,7 +92,7 @@ bool loadMediaHelper(KeyPressSurfaces img, string path, string name) {
 
 	int index = getImgIndex(img);
 
-	SDL_Surface* loadedSurface = loadSurface(path);
+	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 
 	if (loadedSurface == NULL) {
 		err(name);
@@ -103,19 +117,19 @@ bool loadMediaHelper(KeyPressSurfaces img, string path, string name) {
 bool loadMedia() {
 	bool success = true;
 
-	if (!loadMediaHelper(KeyPressSurfaces::SHIP, "resources/ship.bmp", "ship")) {
+	if (!loadMediaHelper(KeyPressSurfaces::SHIP, "resources/ship.png", "ship")) {
 		success = false;
 	}
 
-	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID1, "resources/asteroid1.bmp", "asteroid1")) {
+	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID1, "resources/asteroid1.png", "asteroid1")) {
 		success = false;
 	}
 
-	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID2, "resources/asteroid2.bmp", "asteroid2")) {
+	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID2, "resources/asteroid2.png", "asteroid2")) {
 		success = false;
 	}
 
-	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID3, "resources/asteroid3.bmp", "asteroid3")) {
+	if (!loadMediaHelper(KeyPressSurfaces::ASTEROID3, "resources/asteroid3.png", "asteroid3")) {
 		success = false;
 	}
 
@@ -135,6 +149,7 @@ void close() {
 }
 
 SDL_Surface* loadSurface(string path) {
+	//SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
 	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
 
 	if (loadedSurface == NULL) {
@@ -202,4 +217,3 @@ int main(int argc, char* args[]) {
 
 	return 0;
 }
-
