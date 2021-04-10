@@ -19,14 +19,19 @@ enum class KeyPressSurfaces {
 bool init();
 bool loadMedia();
 void close();
-SDL_Surface* loadSurface(string path);
+
+//SDL_Surface* loadSurface(string path);
+SDL_Texture* loadTexture(string path);
 
 SDL_Window* gWindow = NULL;
-SDL_Surface* gScreenSurface = NULL;
+SDL_Renderer* gRenderer = NULL;
+//SDL_Surface* gScreenSurface = NULL;
 
 const int gImageCount = 4;
-SDL_Surface* gKeyPressImages[gImageCount];
-SDL_Surface* gCurrentImage = NULL;
+SDL_Texture* gKeyPressImages[gImageCount];
+SDL_Texture* gCurrentImage = NULL;
+//SDL_Surface* gKeyPressImages[gImageCount];
+//SDL_Surface* gCurrentImage = NULL;
 
 void err(string name) {
 	printf("Error | %s |\n%s", name.c_str(), SDL_GetError());
@@ -51,13 +56,20 @@ bool init() {
 			err("Window Create");
 		}
 		else {
-			int imgFlags = IMG_INIT_PNG;
-			if (!(IMG_Init(imgFlags) & imgFlags)) {
-				err_img("SDL Img Init");
+			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+			if (gRenderer == NULL) {
+				err("Renderer");
 			}
 			else {
-				gScreenSurface = SDL_GetWindowSurface(gWindow);
+				SDL_SetRenderDrawColor(gRenderer, 0xaa, 0xaa, 0xaa, 0xff);
+				//SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+
+				int imgFlags = IMG_INIT_PNG;
+				if (!(IMG_Init(imgFlags) & imgFlags)) {
+					err_img("SDL Img Init");
+				}
 			}
+			//	gScreenSurface = SDL_GetWindowSurface(gWindow);
 		}
 	}
 
@@ -87,11 +99,50 @@ int getImgIndex(KeyPressSurfaces img) {
 	return index;
 }
 
+SDL_Texture* loadTexture(string path) {
+	SDL_Texture* texture = NULL;
+
+	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+	if (loadedSurface == NULL) {
+		err("Img load");
+	}
+	else {
+		texture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		if (texture == NULL) {
+			err("Texture");
+		}
+
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	return texture;
+}
+
+//SDL_Surface* loadSurface(string path) {
+//	//SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
+//	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
+//
+//	if (loadedSurface == NULL) {
+//		string msg = "Image Load " + path;
+//		err(msg.c_str());
+//	}
+//
+//	return loadedSurface;
+//}
+
 bool loadMediaHelper(KeyPressSurfaces img, string path, string name) {
 	bool success = true;
 
-	int index = getImgIndex(img);
+	SDL_Texture* texture = loadTexture(path);
+	if (texture == NULL) {
+		// err();
+		success = false;
+	}
+	else {
+		gKeyPressImages[getImgIndex(img)] = texture;
+	}
 
+	/*
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 
 	if (loadedSurface == NULL) {
@@ -110,6 +161,7 @@ bool loadMediaHelper(KeyPressSurfaces img, string path, string name) {
 
 		SDL_FreeSurface(loadedSurface);
 	}
+	*/
 
 	return success;
 }
@@ -138,26 +190,19 @@ bool loadMedia() {
 
 void close() {
 	for (int i = 0; i < gImageCount; i++) {
-		SDL_FreeSurface(gKeyPressImages[i]);
+		SDL_DestroyTexture(gKeyPressImages[i]);
+		//SDL_FreeSurface(gKeyPressImages[i]);
 		gKeyPressImages[i] = NULL;
 	}
+
+	SDL_DestroyRenderer(gRenderer);
+	gRenderer = NULL;
 
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
 
+	IMG_Quit();
 	SDL_Quit();
-}
-
-SDL_Surface* loadSurface(string path) {
-	//SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
-	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
-
-	if (loadedSurface == NULL) {
-		string msg = "Image Load " + path;
-		err(msg.c_str());
-	}
-
-	return loadedSurface;
 }
 
 int main(int argc, char* args[]) {
@@ -204,7 +249,11 @@ int main(int argc, char* args[]) {
 				stretchRect.w = SCREEN_WIDTH;
 				stretchRect.h = SCREEN_HEIGHT;
 
-				SDL_BlitScaled(gCurrentImage, NULL, gScreenSurface, &stretchRect);
+				SDL_RenderClear(gRenderer);
+				SDL_RenderCopy(gRenderer, gCurrentImage, NULL, NULL);
+				SDL_RenderPresent(gRenderer);
+
+				//SDL_BlitScaled(gCurrentImage, NULL, gScreenSurface, &stretchRect);
 				//SDL_BlitSurface(gCurrentImage, NULL, gScreenSurface, NULL);
 
 				SDL_UpdateWindowSurface(gWindow);
