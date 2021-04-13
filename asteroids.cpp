@@ -55,7 +55,7 @@ namespace Asteroids {
 	}
 
 	bool loadTextures() {
-
+		return true;
 	}
 
 	void close() {
@@ -77,32 +77,37 @@ namespace Asteroids {
 	}
 
 	//
+}
 
-	int main(int argc, char* args[]) {
-		if (init() && loadTextures()) {
-			bool quit = false;
 
-			SDL_Event e;
+int main(int argc, char* args[]) {
+	using namespace Asteroids;
 
-			//GameObject ship = GameObject(, 32, 32);
+	if (init() && loadTextures()) {
+		bool quit = false;
 
-			while (!quit) {
-				while (SDL_PollEvent(&e) != 0) {
-					if (e.type == SDL_QUIT) {
-						quit = true;
-					}
+		SDL_Event e;
+
+		//GameObject ship = GameObject(, 32, 32);
+
+		while (!quit) {
+			while (SDL_PollEvent(&e) != 0) {
+				if (e.type == SDL_QUIT) {
+					quit = true;
 				}
-
-				// TODO: delta time
-
-				// tick
-
-				// render
 			}
+
+			// TODO: delta time
+
+			// tick
+
+			SDL_RenderClear(TextureWrapper::renderer);
+			// render
+			SDL_RenderPresent(TextureWrapper::renderer);
 		}
-
-		close();
-
-		return 0;
 	}
+
+	close();
+
+	return 0;
 }

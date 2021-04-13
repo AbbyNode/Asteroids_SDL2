@@ -1,5 +1,7 @@
 #include "texturewrapper.h"
 
+SDL_Renderer* TextureWrapper::renderer = NULL;
+
 TextureWrapper::TextureWrapper(SDL_Texture* texture, SDL_Rect* textureClip, int width, int height) {
 	this->texture = texture;
 	this->textureClip = textureClip;
