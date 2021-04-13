@@ -1,27 +1,30 @@
 #pragma once
 
-#include <SDL.h>
+#include "texturewrapper.h"
 
 class GameObject {
 public:
-	GameObject(SDL_Renderer* renderer, SDL_Texture* texture);
+	GameObject(TextureWrapper* textureWrapper, int width, int height);
 	~GameObject();
 
-	// TODO: Collision?
-
 	// 
-	void tick();
+	void tick(float delta);
 
 	// Display game object to renderer
 	void render();
 
-	// Move the GameObject to new position, lerped by speed
-	void move(float posX, float posY, float speed);
+	void addVelocity(float x, float y);
+	void reduceVelocity(float x, float y);
+
+	float getSpeed();
 
 private:
-	float mPosX = 0, mPosY = 0;
-	float mVelX = 0, mVelY = 0;
-	
-	SDL_Renderer* renderer;
-	SDL_Texture* texture;
+	float posX = 0, posY = 0;
+	float rotation = 0;
+	int width, height;
+
+	float velX = 0, velY = 0;
+	float maxSpeed = 10000;
+
+	TextureWrapper* textureWrapper;
 };
