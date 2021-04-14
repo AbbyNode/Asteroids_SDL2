@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="asteroids.cpp" />
     <ClCompile Include="gameobject.cpp" />
+    <ClCompile Include="playership.cpp" />
     <ClCompile Include="texturewrapper.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gameobject.h" />
+    <ClInclude Include="playership.h" />
     <ClInclude Include="texturewrapper.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>

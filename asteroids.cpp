@@ -21,7 +21,7 @@ namespace Asteroids {
 
 	SDL_Window* window = NULL;
 
-	int ticksPerSecond = 15;
+	int ticksPerSecond = 30;
 	Uint32 tickDelay = 1000 / ticksPerSecond; // delay in millis between ticks
 	Uint32 timeLastTick = 0;
 	Uint32 timeNextTick = 0;
@@ -117,6 +117,20 @@ namespace Asteroids {
 		return success;
 	}
 
+	void handleKeyboardEvent(SDL_Event const& e) {
+		switch (e.key.keysym.sym) {
+		case SDLK_UP:
+			ship->addVelocity(0, -0.05);
+			break;
+		case SDLK_RIGHT:
+			ship->addVelocity(0.1, 0);
+			break;
+		case SDLK_DOWN:
+			ship->addVelocity(0, 0.1);
+			break;
+		}
+	}
+
 	void close() {
 		// TODO: Destroy and deallocate all textures
 
@@ -177,15 +191,20 @@ int main(int argc, char* args[]) {
 				if (e.type == SDL_QUIT) {
 					quit = true;
 				}
+				else if (e.type == SDL_KEYDOWN) {
+					handleKeyboardEvent(e);
+				}
+
 			}
 
 			Uint32 timeTickNow = SDL_GetTicks();
 			//printf("%u | %u | %u\n", ticks, tickTimeNext, tickDelay);
 			if (timeTickNow >= timeNextTick) {
-				Uint32 delta = timeTickNow - timeLastTick;
+				Uint32 timeDelta = timeTickNow - timeLastTick;
 
 				// TODO: tick
 				//printf("tick\n");
+				ship->tick(timeDelta);
 
 				timeLastTick = timeTickNow;
 				timeNextTick = timeTickNow + tickDelay;
