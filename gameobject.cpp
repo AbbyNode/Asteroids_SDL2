@@ -1,6 +1,8 @@
 #include "gameobject.h"
 
 #include <algorithm>
+
+#include "texturewrapper.h"
 #include "util.h"
 
 GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height)
@@ -52,4 +54,8 @@ void GameObject::reduceVelocity(float x, float y) {
 
 float GameObject::getSpeed() {
 	return util::speed(velX, velY);
+}
+
+void GameObject::setMaxSpeed(float maxSpeed) {
+	this->maxSpeed = (maxSpeed >= 0) ? maxSpeed : 0;
 }

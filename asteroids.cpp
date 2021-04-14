@@ -7,6 +7,7 @@
 
 #include "texturewrapper.h"
 #include "gameobject.h"
+#include "playership.h"
 
 namespace Asteroids {
 	using std::string;
@@ -27,7 +28,7 @@ namespace Asteroids {
 	Uint32 timeNextTick = 0;
 
 	enum class TextureName {
-		SHIP, ASTEROID1, ASTEROID2, ASTEROID3
+		SHIP, BULLET, ASTEROID1, ASTEROID2, ASTEROID3
 	};
 	unordered_map<TextureName, TextureWrapper*> textures;
 	
@@ -93,6 +94,9 @@ namespace Asteroids {
 		bool success = true;
 
 		if (!loadHelper("ship", TextureName::SHIP)) {
+			success = false;
+		}
+		if (!loadHelper("bullet", TextureName::BULLET)) {
 			success = false;
 		}
 		if (!loadHelper("asteroid1", TextureName::ASTEROID1)) {

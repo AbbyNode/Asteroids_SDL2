@@ -17,6 +17,7 @@ public:
 	void reduceVelocity(float x, float y);
 
 	float getSpeed();
+	void setMaxSpeed(float maxSpeed);
 
 private:
 	float posX = 0, posY = 0;
