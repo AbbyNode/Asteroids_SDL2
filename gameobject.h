@@ -26,5 +26,5 @@ private:
 	float velX = 0, velY = 0;
 	float maxSpeed = 10000;
 
-	TextureWrapper* textureWrapper;
+	TextureWrapper* textureWrapper = NULL;
 };

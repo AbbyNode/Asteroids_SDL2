@@ -3,10 +3,8 @@
 #include <algorithm>
 #include "util.h"
 
-GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height) {
-	this->textureWrapper = textureWrapper;
-	this->width = width;
-	this->height = height;
+GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height)
+	: textureWrapper(textureWrapper), width(width), height(height) {
 }
 
 GameObject::~GameObject() {}
