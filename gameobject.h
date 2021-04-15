@@ -26,6 +26,9 @@ public:
 	float getRotation();
 	float getSpeed();
 
+protected:
+	void setPosition(float x, float y);
+
 private:
 	int width, height;
 

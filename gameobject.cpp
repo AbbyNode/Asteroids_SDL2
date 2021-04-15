@@ -42,7 +42,7 @@ void GameObject::addVelocity(float x, float y) {
 	float newVelY = velY + y;
 	
 	// Cap to max speed
-	float newSpeed = util::speed(newVelX, newVelY);
+	float newSpeed = util::hypotenuse(newVelX, newVelY);
 	if (newSpeed > maxSpeed) {
 		float speedRatio = maxSpeed / newSpeed;
 		newVelX *= speedRatio;
@@ -54,29 +54,6 @@ void GameObject::addVelocity(float x, float y) {
 }
 
 void GameObject::reduceVelocity(float x, float y) {
-	/*
-	using std::max;
-	using std::min;
-
-	float newVelX = velX - x; // = max((velX - x), 0.0f);
-	float newVelY = velY - y; // = max((velY - y), 0.0f);
-
-	// Stop at 0
-	if (velX > 0) {
-		newVelX -= min(x, newVelX);
-	}
-	else if (velX < 0) {
-		newVelX -= max(x, newVelX);
-	}
-
-	if (velY > 0) {
-		newVelY -= min(y, newVelY);
-	}
-	else if (velY < 0) {
-
-	}
-	*/
-
 	velX = util::toZero(velX, -x);
 	velY = util::toZero(velY, -y);
 }
@@ -94,5 +71,10 @@ float GameObject::getRotation() {
 }
 
 float GameObject::getSpeed() {
-	return util::speed(velX, velY);
+	return util::hypotenuse(velX, velY);
+}
+
+void GameObject::setPosition(float x, float y) {
+	posX = x;
+	posY = y;
 }

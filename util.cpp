@@ -6,26 +6,30 @@ namespace util {
 	static const double PI = atan(1) * 4;
 	static const double DEG_TO_RAD_MULT = PI / 180;
 
-	float speed(float x, float y) {
+	float hypotenuse(float x, float y) {
 		return (float)sqrt(pow(x, 2) + pow(y, 2));
 	}
 
 	float toZero(float value, float change) {
 		float newValue = value + change;
-		if (abs(newValue) > abs(value)) {
-			// 
-			/*
-vel old	vel change	add	vel new			abs of new further from 0
-20	5	-5	15		15
-20	-5	5	25	no		20
--20	5	-5	-25	no		-20
--20	-5	5	-15		-15
-20	25	-25	-5	no			0
-20	-25	25	45	no		20
--20	25	-25	-45	no		-20
--20	-25	25	5	no			0
-			*/
+
+		if ((newValue * value) < 0) { // diff signs, crossed 0
+			newValue = 0;
 		}
+		else {
+			if (newValue >= 0) { // positive
+				if (newValue > value) { // went the wrong way (up)
+					newValue = value;
+				}
+			}
+			else { // negative
+				if (newValue < value) { // went the wrong way (down)
+					newValue = value;
+				}
+			}
+		}
+
+		return newValue;
 	}
 
 	float warpValue(float val, float min, float max) {

@@ -13,6 +13,8 @@ namespace Asteroids {
 	using std::string;
 	using std::unordered_map;
 
+#pragma region variables
+
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 	const char* TITLE = "Asteroids";
@@ -35,16 +37,24 @@ namespace Asteroids {
 	// TODO: Array of gameobjects?
 	PlayerShip* ship = NULL;
 
-	//
+#pragma endregion variables
+
+#pragma region forward declare
 
 	bool init();
-	bool loadTextures();
 	void close();
 
+	bool loadTextures();
 	SDL_Texture* loadTextureFromFile(string path);
+	bool createShip();
+
+	bool handleKeyboardEvent(SDL_Event const& e);
+
 	void err(string msg);
 
-	//
+#pragma endregion forward declare
+
+#pragma region functions
 
 	bool init() {
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
@@ -58,7 +68,7 @@ namespace Asteroids {
 			return false;
 		}
 
-		TextureWrapper::renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+		TextureWrapper::renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 		if (TextureWrapper::renderer == NULL) {
 			err("Renderer Create");
 			return false;
@@ -72,6 +82,21 @@ namespace Asteroids {
 
 		return true;
 	}
+
+	void close() {
+		// TODO: Destroy and deallocate all textures
+
+		SDL_DestroyRenderer(TextureWrapper::renderer);
+		TextureWrapper::renderer = NULL;
+
+		SDL_DestroyWindow(window);
+		window = NULL;
+
+		IMG_Quit();
+		SDL_Quit();
+	}
+
+	//
 
 	bool loadTextures() {
 		// Load texture into hashmap
@@ -111,57 +136,6 @@ namespace Asteroids {
 
 		return success;
 	}
-	
-	bool createShip() {
-		bool success = true;
-
-		static PlayerShip shipObj(textures[TextureName::SHIP]);
-		ship = &shipObj;
-
-		return success;
-	}
-
-	void handleKeyboardEvent(SDL_Event const& e) {
-		bool toggle = (e.type == SDL_KEYDOWN);
-
-		switch (e.key.keysym.sym) {
-		case SDLK_UP:
-		case SDLK_w:
-			//ship->addVelocity(0, -0.05);
-			ship->accelerate(toggle);
-			break;
-		case SDLK_DOWN:
-		case SDLK_s:
-			//ship->addVelocity(0, 0.1);
-			ship->decelerate(toggle);
-			break;
-		case SDLK_LEFT:
-		case SDLK_a:
-			ship->turn(toggle, false);
-			//ship->addVelocity(0.1, 0);
-			break;
-		case SDLK_RIGHT:
-		case SDLK_d:
-			ship->turn(toggle, true);
-			//ship->addVelocity(0.1, 0);
-			break;
-		}
-	}
-
-	void close() {
-		// TODO: Destroy and deallocate all textures
-
-		SDL_DestroyRenderer(TextureWrapper::renderer);
-		TextureWrapper::renderer = NULL;
-
-		SDL_DestroyWindow(window);
-		window = NULL;
-
-		IMG_Quit();
-		SDL_Quit();
-	}
-
-	//
 
 	SDL_Texture* loadTextureFromFile(string path) {
 		SDL_Texture* texture = NULL;
@@ -182,18 +156,62 @@ namespace Asteroids {
 		return texture;
 	}
 
+	bool createShip() {
+		bool success = true;
+
+		static PlayerShip shipObj(textures[TextureName::SHIP]);
+		ship = &shipObj;
+
+		return success;
+	}
+
+	//
+
+	bool handleKeyboardEvent(SDL_Event const& e) {
+		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+			bool toggle = (e.type == SDL_KEYDOWN);
+
+			switch (e.key.keysym.sym) {
+			case SDLK_UP:
+			case SDLK_w:
+				//ship->addVelocity(0, -0.05);
+				ship->accelerate(toggle);
+				break;
+			case SDLK_DOWN:
+			case SDLK_s:
+				//ship->addVelocity(0, 0.1);
+				ship->decelerate(toggle);
+				break;
+			case SDLK_LEFT:
+			case SDLK_a:
+				ship->turn(toggle, false);
+				//ship->addVelocity(0.1, 0);
+				break;
+			case SDLK_RIGHT:
+			case SDLK_d:
+				ship->turn(toggle, true);
+				//ship->addVelocity(0.1, 0);
+				break;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	//
+
 	void err(string msg) {
 		printf("Error | %s\n%s", msg.c_str(), SDL_GetError());
 		//printf("Error | %s\n%s\n%s", msg.c_str(), SDL_GetError(), IMG_GetError());
 	}
 
-	//
+#pragma endregion functions
 }
 
 int main(int argc, char* args[]) {
 	using namespace Asteroids;
-
-	printf("start\n");
 
 	if (init() && loadTextures()) {
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
@@ -211,10 +229,9 @@ int main(int argc, char* args[]) {
 				if (e.type == SDL_QUIT) {
 					quit = true;
 				}
-				else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+				else {
 					handleKeyboardEvent(e);
 				}
-
 			}
 
 			Uint32 timeTickNow = SDL_GetTicks();
@@ -222,8 +239,6 @@ int main(int argc, char* args[]) {
 			if (timeTickNow >= timeNextTick) {
 				Uint32 timeDelta = timeTickNow - timeLastTick;
 
-				// TODO: tick
-				//printf("tick\n");
 				ship->tick(timeDelta);
 
 				timeLastTick = timeTickNow;
@@ -233,8 +248,6 @@ int main(int argc, char* args[]) {
 			SDL_SetRenderDrawColor(TextureWrapper::renderer, 0x00, 0x00, 0x00, 0xff);
 			SDL_RenderClear(TextureWrapper::renderer);
 
-			// TODO: render
-			//printf("r");
 			ship->render();
 
 			SDL_RenderPresent(TextureWrapper::renderer);

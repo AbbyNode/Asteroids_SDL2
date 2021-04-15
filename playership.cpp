@@ -6,8 +6,12 @@
 
 PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 32, 32) {
 	setMaxSpeed(0.5);
-	turnSpeed = 0.4;
+	turnSpeed = 0.3;
 	accelerationPerSecond = 0.0005;
+
+	float x = (GameObject::SCREEN_WIDTH / 2.0f) - 16;
+	float y = (GameObject::SCREEN_HEIGHT / 2.0f) - 16;
+	setPosition(x, y);
 }
 
 void PlayerShip::tick(float delta) {
@@ -25,6 +29,7 @@ void PlayerShip::tick(float delta) {
 			reduceVelocity(accelerationX, accelerationY);
 		}
 	}
+
 	GameObject::tick(delta);
 }
 
@@ -35,9 +40,6 @@ void PlayerShip::accelerate(bool toggle) {
 void PlayerShip::decelerate(bool toggle) {
 	decelerating = toggle;
 }
-
-// DECELERATE, use gameobject decelerate method so you can stop
-// OR, just dont allow backward thrust
 
 void PlayerShip::turn(bool toggle, bool clockwise) {
 	if (toggle) {
