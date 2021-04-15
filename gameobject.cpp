@@ -5,6 +5,9 @@
 #include "texturewrapper.h"
 #include "util.h"
 
+int GameObject::SCREEN_HEIGHT = 0;
+int GameObject::SCREEN_WIDTH = 0;
+
 GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height)
 	: textureWrapper(textureWrapper), width(width), height(height) {
 }
@@ -15,7 +18,27 @@ void GameObject::tick(float delta) {
 	float moveX = velX * delta;
 	float moveY = velY * delta;
 
+	float newRotation = rotation + (angularMomentum * delta);
+	rotation = util::simplifyAngle(newRotation);
+
 	// Collisions?
+
+	float newPosX = posX + moveX;
+	float newPosY = posY + moveY;
+
+	if (newPosX > SCREEN_WIDTH) {
+		newPosX -= SCREEN_WIDTH;
+	}
+	else if (newPosX < 0) {
+		newPosX += SCREEN_WIDTH;
+	}
+
+	if (newPosY > SCREEN_HEIGHT) {
+		newPosY -= SCREEN_HEIGHT;
+	}
+	else if (newPosY < 0) {
+
+	}
 
 	posX += moveX;
 	posY += moveY;
@@ -52,10 +75,18 @@ void GameObject::reduceVelocity(float x, float y) {
 	velY = newVelY;
 }
 
-float GameObject::getSpeed() {
-	return util::speed(velX, velY);
+void GameObject::setAngularMomentum(float angularMomentum) {
+	this->angularMomentum = angularMomentum;
 }
 
 void GameObject::setMaxSpeed(float maxSpeed) {
 	this->maxSpeed = (maxSpeed >= 0) ? maxSpeed : 0;
+}
+
+float GameObject::getRotation() {
+	return rotation;
+}
+
+float GameObject::getSpeed() {
+	return util::speed(velX, velY);
 }

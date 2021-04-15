@@ -5,9 +5,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-#include "texturewrapper.h"
 #include "gameobject.h"
 #include "playership.h"
+#include "texturewrapper.h"
 
 namespace Asteroids {
 	using std::string;
@@ -33,7 +33,7 @@ namespace Asteroids {
 	unordered_map<TextureName, TextureWrapper*> textures;
 	
 	// TODO: Array of gameobjects?
-	GameObject* ship = NULL;
+	PlayerShip* ship = NULL;
 
 	//
 
@@ -115,22 +115,35 @@ namespace Asteroids {
 	bool createShip() {
 		bool success = true;
 
-		static GameObject shipObj(textures[TextureName::SHIP], 32, 32);
+		static PlayerShip shipObj(textures[TextureName::SHIP]);
 		ship = &shipObj;
 
 		return success;
 	}
 
 	void handleKeyboardEvent(SDL_Event const& e) {
+		bool toggle = (e.type == SDL_KEYDOWN);
+
 		switch (e.key.keysym.sym) {
 		case SDLK_UP:
-			ship->addVelocity(0, -0.05);
-			break;
-		case SDLK_RIGHT:
-			ship->addVelocity(0.1, 0);
+		case SDLK_w:
+			//ship->addVelocity(0, -0.05);
+			ship->accelerate(toggle, true);
 			break;
 		case SDLK_DOWN:
-			ship->addVelocity(0, 0.1);
+		case SDLK_s:
+			//ship->addVelocity(0, 0.1);
+			ship->accelerate(toggle, false);
+			break;
+		case SDLK_LEFT:
+		case SDLK_a:
+			ship->turn(toggle, false);
+			//ship->addVelocity(0.1, 0);
+			break;
+		case SDLK_RIGHT:
+		case SDLK_d:
+			ship->turn(toggle, true);
+			//ship->addVelocity(0.1, 0);
 			break;
 		}
 	}
@@ -183,9 +196,12 @@ int main(int argc, char* args[]) {
 	printf("start\n");
 
 	if (init() && loadTextures()) {
-		// TODO: Init game objects?
-		//GameObject ship = GameObject(, 32, 32);
+		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
+		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
+
 		createShip();
+
+		// TODO: Init game objects?
 
 		SDL_Event e;
 
@@ -195,7 +211,7 @@ int main(int argc, char* args[]) {
 				if (e.type == SDL_QUIT) {
 					quit = true;
 				}
-				else if (e.type == SDL_KEYDOWN) {
+				else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
 					handleKeyboardEvent(e);
 				}
 
