@@ -6,9 +6,11 @@ namespace util {
 
 	float speed(float x, float y);
 
+	float toZero(float value, float change);
+
 	float warpValue(float val, float min, float max);
 
-	float simplifyAngle(float angle);
+	float warpAngle(float angle);
 	
 	void coordFromAngle(float angle, float& x, float& y);
 }

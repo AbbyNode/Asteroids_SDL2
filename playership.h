@@ -9,11 +9,13 @@ public:
 
 	virtual void tick(float delta);
 
-	void accelerate(bool toggle, bool forward);
+	void accelerate(bool toggle);
+	void decelerate(bool toggle);
 	void turn(bool toggle, bool clockwise);
 
 private:
-	float accelerationX = 0, accelerationY = 0;
+	bool accelerating = false;
+	bool decelerating = false;
 
 	float turnSpeed = 0;
 	float accelerationPerSecond = 0;

@@ -11,29 +11,29 @@ PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapp
 }
 
 void PlayerShip::tick(float delta) {
-	if (accelerationX != 0 || accelerationY != 0) {
-		addVelocity(accelerationX * delta, accelerationY * delta);
+	if (accelerating || decelerating) {
+		float x, y;
+		util::coordFromAngle(getRotation(), x, y);
+
+		float accelerationX = x * accelerationPerSecond * delta;
+		float accelerationY = y * accelerationPerSecond * delta;
+
+		if (accelerating) {
+			addVelocity(accelerationX, accelerationY);
+		}
+		else if (decelerating) {
+			reduceVelocity(accelerationX, accelerationY);
+		}
 	}
 	GameObject::tick(delta);
 }
 
-void PlayerShip::accelerate(bool toggle, bool forward) {
-	if (toggle) {
-		float amt = forward ? accelerationPerSecond : -accelerationPerSecond;
+void PlayerShip::accelerate(bool toggle) {
+	accelerating = toggle;
+}
 
-		// TODO: Allow change direction while holding key
-
-		float x, y;
-		util::coordFromAngle(getRotation(), x, y);
-		//printf("%f | %f | %f\n", getRotation(), x, y);
-
-		accelerationX = amt * x;
-		accelerationY = amt * y;
-	}
-	else {
-		accelerationX = 0;
-		accelerationY = 0;
-	}
+void PlayerShip::decelerate(bool toggle) {
+	decelerating = toggle;
 }
 
 // DECELERATE, use gameobject decelerate method so you can stop

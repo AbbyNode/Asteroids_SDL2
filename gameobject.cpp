@@ -19,7 +19,7 @@ void GameObject::tick(float delta) {
 	float moveY = velY * delta;
 
 	float newRotation = rotation + (angularMomentum * delta);
-	rotation = util::simplifyAngle(newRotation);
+	rotation = util::warpAngle(newRotation);
 
 	// Collisions?
 
@@ -54,13 +54,31 @@ void GameObject::addVelocity(float x, float y) {
 }
 
 void GameObject::reduceVelocity(float x, float y) {
+	/*
+	using std::max;
 	using std::min;
 
-	float newVelX = min((velX - x), 0.0f);
-	float newVelY = min((velY - y), 0.0f);
+	float newVelX = velX - x; // = max((velX - x), 0.0f);
+	float newVelY = velY - y; // = max((velY - y), 0.0f);
 
-	velX = newVelX;
-	velY = newVelY;
+	// Stop at 0
+	if (velX > 0) {
+		newVelX -= min(x, newVelX);
+	}
+	else if (velX < 0) {
+		newVelX -= max(x, newVelX);
+	}
+
+	if (velY > 0) {
+		newVelY -= min(y, newVelY);
+	}
+	else if (velY < 0) {
+
+	}
+	*/
+
+	velX = util::toZero(velX, -x);
+	velY = util::toZero(velY, -y);
 }
 
 void GameObject::setAngularMomentum(float angularMomentum) {

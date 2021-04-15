@@ -128,12 +128,12 @@ namespace Asteroids {
 		case SDLK_UP:
 		case SDLK_w:
 			//ship->addVelocity(0, -0.05);
-			ship->accelerate(toggle, true);
+			ship->accelerate(toggle);
 			break;
 		case SDLK_DOWN:
 		case SDLK_s:
 			//ship->addVelocity(0, 0.1);
-			ship->accelerate(toggle, false);
+			ship->decelerate(toggle);
 			break;
 		case SDLK_LEFT:
 		case SDLK_a:
