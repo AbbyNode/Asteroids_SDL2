@@ -5,7 +5,9 @@
 #include "util.h"
 
 PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 32, 32) {
-	setMaxSpeed(1);
+	setMaxSpeed(0.5);
+	turnSpeed = 0.4;
+	accelerationPerSecond = 0.0005;
 }
 
 void PlayerShip::tick(float delta) {
@@ -18,6 +20,8 @@ void PlayerShip::tick(float delta) {
 void PlayerShip::accelerate(bool toggle, bool forward) {
 	if (toggle) {
 		float amt = forward ? accelerationPerSecond : -accelerationPerSecond;
+
+		// TODO: Allow change direction while holding key
 
 		float x, y;
 		util::coordFromAngle(getRotation(), x, y);

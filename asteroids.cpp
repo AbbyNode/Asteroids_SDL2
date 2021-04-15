@@ -22,7 +22,7 @@ namespace Asteroids {
 
 	SDL_Window* window = NULL;
 
-	int ticksPerSecond = 30;
+	int ticksPerSecond = 60;
 	Uint32 tickDelay = 1000 / ticksPerSecond; // delay in millis between ticks
 	Uint32 timeLastTick = 0;
 	Uint32 timeNextTick = 0;

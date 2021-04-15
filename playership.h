@@ -15,6 +15,6 @@ public:
 private:
 	float accelerationX = 0, accelerationY = 0;
 
-	float turnSpeed = 0.2;
-	float accelerationPerSecond = 0.001;
+	float turnSpeed = 0;
+	float accelerationPerSecond = 0;
 };

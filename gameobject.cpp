@@ -25,23 +25,11 @@ void GameObject::tick(float delta) {
 
 	float newPosX = posX + moveX;
 	float newPosY = posY + moveY;
+	newPosX = util::warpValue(newPosX, 0, SCREEN_WIDTH);
+	newPosY = util::warpValue(newPosY, 0, SCREEN_HEIGHT);
 
-	if (newPosX > SCREEN_WIDTH) {
-		newPosX -= SCREEN_WIDTH;
-	}
-	else if (newPosX < 0) {
-		newPosX += SCREEN_WIDTH;
-	}
-
-	if (newPosY > SCREEN_HEIGHT) {
-		newPosY -= SCREEN_HEIGHT;
-	}
-	else if (newPosY < 0) {
-
-	}
-
-	posX += moveX;
-	posY += moveY;
+	posX = newPosX;
+	posY = newPosY;
 }
 
 void GameObject::render() {
