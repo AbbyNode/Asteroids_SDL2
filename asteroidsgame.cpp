@@ -297,9 +297,11 @@ int main(int argc, char* args[]) {
 
 	// Init and load
 	if (init() && loadTextures()) {
+		// Setup GameObject statics
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
 		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
 
+		// Init random generator
 		util::initRandom(std::chrono::system_clock::now().time_since_epoch().count());
 
 		// Spawn player ship
