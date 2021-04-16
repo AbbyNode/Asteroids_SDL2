@@ -10,6 +10,7 @@
 #include "gameobject.h"
 #include "playership.h"
 #include "texturewrapper.h"
+#include "util.h"
 
 namespace AsteroidsGame {
 	using std::string;
@@ -50,7 +51,7 @@ namespace AsteroidsGame {
 
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
-	bool createShip();
+	bool createPlayerShip();
 
 	void tick(float delta);
 	void render();
@@ -163,7 +164,7 @@ namespace AsteroidsGame {
 		return success;
 	}
 
-	bool createShip() {
+	bool createPlayerShip() {
 		playerShip = new PlayerShip(textures[TextureName::SHIP]);
 		return (playerShip != NULL);
 	}
@@ -229,19 +230,15 @@ namespace AsteroidsGame {
 #pragma endregion functions
 }
 
-namespace AsteroidManager {
-	using AsteroidsGame::TextureName;
-	using AsteroidsGame::textures;
-	using AsteroidsGame::asteroids;
+namespace AsteroidSpawner {
+	int count = 0;
+	int maxCount = 5;
 
-	int asteroidCount = 0;
-	int maxAsteroids = 10;
+	int delayMin = 2; // seconds
+	int delayMax = 8;
 
-	int asteroidSpawnDelayMin = 2; // seconds
-	int asteroidSpawnDelayMax = 8;
-
-	int asteroidSizeMin = 32;
-	int asteroidSizeMax = 128;
+	int sizeMin = 32;
+	int sizeMax = 128;
 
 	SDL_TimerID timerID_asteroidSpawner = NULL;
 
@@ -253,9 +250,12 @@ namespace AsteroidManager {
 	//
 
 	Asteroid* createAsteroid() {
+		using AsteroidsGame::TextureName;
+		using AsteroidsGame::textures;
+
 		// Get random texture
 		TextureWrapper* texture = NULL;
-		int randTexture = rand() % 3;
+		int randTexture = util::randomInt(0, 3);
 		switch (randTexture) {
 		case 0:
 			texture = textures[TextureName::ASTEROID1];
@@ -269,23 +269,22 @@ namespace AsteroidManager {
 		}
 
 		// Get random size
-		int randSize = (rand() % asteroidSizeMax) + asteroidSizeMin;
-
-		// TODO: Asteroid position
-		// Get random position
-		int posX = Asteroid::SCREEN_WIDTH / 2.0f;
-		int posY = Asteroid::SCREEN_HEIGHT / 2.0f;
-
+		int randSize = util::randomInt(sizeMin, sizeMax);
+		
 		// Create asteroid GameObject
-		return new Asteroid(texture, randSize, randSize, posX, posY);
+		return new Asteroid(texture, randSize, randSize);
 	}
 
 	Uint32 asteroidSpawnerCallback(Uint32 interval, void* param) {
-		Asteroid* asteroid = createAsteroid();
-		asteroids.push_back(asteroid);
+		using AsteroidsGame::asteroids;
+
+		if (count < maxCount) {
+			Asteroid* asteroid = createAsteroid();
+			asteroids.push_back(asteroid);
+		}
 
 		// Call self with delay
-		Uint32 nextSpawn = (rand() % asteroidSpawnDelayMax) + asteroidSpawnDelayMin;
+		Uint32 nextSpawn = util::randomInt(delayMin, delayMax);
 		timerID_asteroidSpawner =
 			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, NULL);
 
@@ -295,18 +294,23 @@ namespace AsteroidManager {
 
 int main(int argc, char* args[]) {
 	using namespace AsteroidsGame;
-	using namespace AsteroidManager;
 
+	// Init and load
 	if (init() && loadTextures()) {
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
 		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
 
-		createShip();
-		timerID_asteroidSpawner =
-			SDL_AddTimer(asteroidSpawnDelayMin * 1000, asteroidSpawnerCallback, NULL);
+		// Spawn player ship
+		createPlayerShip();
 
+		// Start spawning asteroids with timer
+		AsteroidSpawner::timerID_asteroidSpawner =
+			SDL_AddTimer(AsteroidSpawner::delayMin * 1000, AsteroidSpawner::asteroidSpawnerCallback, NULL);
+
+		// Store events to handle
 		SDL_Event e;
 
+		// Main game loop
 		bool quit = false;
 		while (!quit) {
 			// handle events
@@ -319,8 +323,8 @@ int main(int argc, char* args[]) {
 				}
 			}
 
+			// Tick (every tickDelay)
 			Uint32 timeTickNow = SDL_GetTicks();
-			//printf("%u | %u | %u\n", ticks, tickTimeNext, tickDelay);
 			if (timeTickNow >= timeNextTick) {
 				Uint32 timeDelta = timeTickNow - timeLastTick;
 
@@ -330,19 +334,21 @@ int main(int argc, char* args[]) {
 				timeNextTick = timeTickNow + tickDelay;
 			}
 
+			// Render (every frame)
 			SDL_SetRenderDrawColor(TextureWrapper::renderer, 0x00, 0x00, 0x00, 0xff);
 			SDL_RenderClear(TextureWrapper::renderer);
-
 			render();
-
 			SDL_RenderPresent(TextureWrapper::renderer);
 		} // while gameloop
 
-		if (timerID_asteroidSpawner != NULL) {
-			SDL_RemoveTimer(timerID_asteroidSpawner);
+
+		// Remove timer if exists
+		if (AsteroidSpawner::timerID_asteroidSpawner != NULL) {
+			SDL_RemoveTimer(AsteroidSpawner::timerID_asteroidSpawner);
 		}
 	} // if init success
-
+	
+	// Cleanup
 	close();
 
 	return 0;

@@ -13,4 +13,8 @@ namespace util {
 	float warpAngle(float angle);
 	
 	void coordFromAngle(float angle, float& x, float& y);
+
+	int randomInt(int min, int max);
+
+	float randomFloat(float min, float max);
 }

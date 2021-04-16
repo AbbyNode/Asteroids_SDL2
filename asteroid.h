@@ -4,5 +4,8 @@
 
 class Asteroid : public GameObject {
 public:
-	Asteroid(TextureWrapper* textureWrapper, int width, int height, int posX, int posY);
+	static float spinMin;
+	static float spinMax;
+
+	Asteroid(TextureWrapper* textureWrapper, int width, int height);
 };

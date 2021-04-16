@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <cmath>
+#include <random>
 
 namespace util {
 	static const double PI = atan(1) * 4;
@@ -50,5 +51,13 @@ namespace util {
 		float angleRad = angle * DEG_TO_RAD_MULT;
 		x = cos(angleRad);
 		y = sin(angleRad);
+	}
+
+	int randomInt(int min, int max) {
+		return (rand() % max) + min;
+	}
+
+	float randomFloat(float min, float max) {
+		return 0.0f;
 	}
 }
