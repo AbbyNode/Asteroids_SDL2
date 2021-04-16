@@ -7,7 +7,7 @@ namespace util {
 	const double PI = atan(1) * 4;
 	const double DEG_TO_RAD_MULT = PI / 180;
 
-	std::mt19937 randomEngine;
+	std::mt19937* randomEngine;
 
 	//
 
@@ -57,13 +57,17 @@ namespace util {
 		y = sin(angleRad);
 	}
 
+	void initRandom(unsigned seed) {
+		randomEngine = new std::mt19937(seed);
+	}
+
 	int randomInt(int min, int max) {
 		std::uniform_int_distribution<int> distribution(min, max);
-		return distribution(randomEngine);
+		return distribution(*randomEngine);
 	}
 
 	float randomFloat(float min, float max) {
 		std::uniform_real_distribution<float> distribution(min, max);
-		return distribution(randomEngine);
+		return distribution(*randomEngine);
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace util {
 	extern const double PI;
 	extern const double DEG_TO_RAD_MULT;
@@ -13,6 +15,10 @@ namespace util {
 	float warpAngle(float angle);
 	
 	void coordFromAngle(float angle, float& x, float& y);
+
+	//
+
+	void initRandom(unsigned seed);
 
 	int randomInt(int min, int max);
 

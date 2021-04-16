@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdlib>
 #include <stdio.h>
 #include <string>
@@ -231,8 +232,7 @@ namespace AsteroidsGame {
 }
 
 namespace AsteroidSpawner {
-	int count = 0;
-	int maxCount = 5;
+	int maxCount = 4;
 
 	int delayMin = 2; // seconds
 	int delayMax = 8;
@@ -255,7 +255,7 @@ namespace AsteroidSpawner {
 
 		// Get random texture
 		TextureWrapper* texture = NULL;
-		int randTexture = util::randomInt(0, 3);
+		int randTexture = util::randomInt(0, 2);
 		switch (randTexture) {
 		case 0:
 			texture = textures[TextureName::ASTEROID1];
@@ -278,7 +278,7 @@ namespace AsteroidSpawner {
 	uint32_t asteroidSpawnerCallback(uint32_t interval, void* param) {
 		using AsteroidsGame::asteroids;
 
-		if (count < maxCount) {
+		if (asteroids.size() < maxCount) {
 			Asteroid* asteroid = createAsteroid();
 			asteroids.push_back(asteroid);
 		}
@@ -299,6 +299,8 @@ int main(int argc, char* args[]) {
 	if (init() && loadTextures()) {
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
 		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
+
+		util::initRandom(std::chrono::system_clock::now().time_since_epoch().count());
 
 		// Spawn player ship
 		createPlayerShip();
