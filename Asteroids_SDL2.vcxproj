@@ -19,13 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asteroids.cpp" />
+    <ClCompile Include="asteroid.cpp" />
+    <ClCompile Include="asteroidsgame.cpp" />
     <ClCompile Include="gameobject.cpp" />
     <ClCompile Include="playership.cpp" />
     <ClCompile Include="texturewrapper.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asteroid.h" />
     <ClInclude Include="gameobject.h" />
     <ClInclude Include="playership.h" />
     <ClInclude Include="texturewrapper.h" />

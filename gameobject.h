@@ -8,8 +8,7 @@ public:
 	static int SCREEN_HEIGHT;
 
 	GameObject(TextureWrapper* textureWrapper, int width, int height);
-	~GameObject();
-
+	
 	// 
 	virtual void tick(float delta);
 

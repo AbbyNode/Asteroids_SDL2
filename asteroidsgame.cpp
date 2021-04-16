@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
@@ -5,13 +6,15 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "asteroid.h"
 #include "gameobject.h"
 #include "playership.h"
 #include "texturewrapper.h"
 
-namespace Asteroids {
+namespace AsteroidsGame {
 	using std::string;
 	using std::unordered_map;
+	using std::vector;
 
 #pragma region variables
 
@@ -33,9 +36,10 @@ namespace Asteroids {
 		SHIP, BULLET, ASTEROID1, ASTEROID2, ASTEROID3
 	};
 	unordered_map<TextureName, TextureWrapper*> textures;
-	
-	// TODO: Array of gameobjects?
-	PlayerShip* ship = NULL;
+
+	PlayerShip* playerShip = NULL;
+
+	vector<Asteroid*> asteroids;
 
 #pragma endregion variables
 
@@ -44,10 +48,12 @@ namespace Asteroids {
 	bool init();
 	void close();
 
-	bool loadTextures();
 	SDL_Texture* loadTextureFromFile(string path);
+	bool loadTextures();
 	bool createShip();
 
+	void tick(float delta);
+	void render();
 	bool handleKeyboardEvent(SDL_Event const& e);
 
 	void err(string msg);
@@ -84,7 +90,9 @@ namespace Asteroids {
 	}
 
 	void close() {
-		// TODO: Destroy and deallocate all textures
+		delete playerShip;
+		asteroids.clear();
+		textures.clear();
 
 		SDL_DestroyRenderer(TextureWrapper::renderer);
 		TextureWrapper::renderer = NULL;
@@ -97,6 +105,25 @@ namespace Asteroids {
 	}
 
 	//
+
+	SDL_Texture* loadTextureFromFile(string path) {
+		SDL_Texture* texture = NULL;
+
+		SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+		if (loadedSurface == NULL) {
+			err("Img load");
+		}
+		else {
+			texture = SDL_CreateTextureFromSurface(TextureWrapper::renderer, loadedSurface);
+			if (texture == NULL) {
+				err("Texture Create");
+			}
+
+			SDL_FreeSurface(loadedSurface);
+		}
+
+		return texture;
+	}
 
 	bool loadTextures() {
 		// Load texture into hashmap
@@ -111,8 +138,7 @@ namespace Asteroids {
 			}
 
 			// Store texture into hashmap
-			static TextureWrapper textureWrapper(texture, NULL);
-			textures[name] = &textureWrapper;
+			textures[name] = new TextureWrapper(texture, NULL);
 			return true;
 		};
 
@@ -137,35 +163,28 @@ namespace Asteroids {
 		return success;
 	}
 
-	SDL_Texture* loadTextureFromFile(string path) {
-		SDL_Texture* texture = NULL;
-
-		SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-		if (loadedSurface == NULL) {
-			err("Img load");
-		}
-		else {
-			texture = SDL_CreateTextureFromSurface(TextureWrapper::renderer, loadedSurface);
-			if (texture == NULL) {
-				err("Texture Create");
-			}
-
-			SDL_FreeSurface(loadedSurface);
-		}
-
-		return texture;
-	}
-
 	bool createShip() {
-		bool success = true;
-
-		static PlayerShip shipObj(textures[TextureName::SHIP]);
-		ship = &shipObj;
-
-		return success;
+		playerShip = new PlayerShip(textures[TextureName::SHIP]);
+		return (playerShip != NULL);
 	}
 
 	//
+
+	void tick(float delta) {
+		playerShip->tick(delta);
+
+		for (Asteroid* asteroid : asteroids) {
+			asteroid->tick(delta);
+		}
+	}
+
+	void render() {
+		playerShip->render();
+
+		for (Asteroid* asteroid : asteroids) {
+			asteroid->render();
+		}
+	}
 
 	bool handleKeyboardEvent(SDL_Event const& e) {
 		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
@@ -174,23 +193,23 @@ namespace Asteroids {
 			switch (e.key.keysym.sym) {
 			case SDLK_UP:
 			case SDLK_w:
-				//ship->addVelocity(0, -0.05);
-				ship->accelerate(toggle);
+				//playerShip->addVelocity(0, -0.05);
+				playerShip->accelerate(toggle);
 				break;
 			case SDLK_DOWN:
 			case SDLK_s:
-				//ship->addVelocity(0, 0.1);
-				ship->decelerate(toggle);
+				//playerShip->addVelocity(0, 0.1);
+				playerShip->decelerate(toggle);
 				break;
 			case SDLK_LEFT:
 			case SDLK_a:
-				ship->turn(toggle, false);
-				//ship->addVelocity(0.1, 0);
+				playerShip->turn(toggle, false);
+				//playerShip->addVelocity(0.1, 0);
 				break;
 			case SDLK_RIGHT:
 			case SDLK_d:
-				ship->turn(toggle, true);
-				//ship->addVelocity(0.1, 0);
+				playerShip->turn(toggle, true);
+				//playerShip->addVelocity(0.1, 0);
 				break;
 			}
 
@@ -210,21 +229,87 @@ namespace Asteroids {
 #pragma endregion functions
 }
 
+namespace AsteroidManager {
+	using AsteroidsGame::TextureName;
+	using AsteroidsGame::textures;
+	using AsteroidsGame::asteroids;
+
+	int asteroidCount = 0;
+	int maxAsteroids = 10;
+
+	int asteroidSpawnDelayMin = 2; // seconds
+	int asteroidSpawnDelayMax = 8;
+
+	int asteroidSizeMin = 32;
+	int asteroidSizeMax = 128;
+
+	SDL_TimerID timerID_asteroidSpawner = NULL;
+
+	//
+
+	Asteroid* createAsteroid();
+	Uint32 asteroidSpawnerCallback(Uint32 interval, void* param);
+
+	//
+
+	Asteroid* createAsteroid() {
+		// Get random texture
+		TextureWrapper* texture = NULL;
+		int randTexture = rand() % 3;
+		switch (randTexture) {
+		case 0:
+			texture = textures[TextureName::ASTEROID1];
+			break;
+		case 1:
+			texture = textures[TextureName::ASTEROID2];
+			break;
+		case 2:
+			texture = textures[TextureName::ASTEROID3];
+			break;
+		}
+
+		// Get random size
+		int randSize = (rand() % asteroidSizeMax) + asteroidSizeMin;
+
+		// TODO: Asteroid position
+		// Get random position
+		int posX = Asteroid::SCREEN_WIDTH / 2.0f;
+		int posY = Asteroid::SCREEN_HEIGHT / 2.0f;
+
+		// Create asteroid GameObject
+		return new Asteroid(texture, randSize, randSize, posX, posY);
+	}
+
+	Uint32 asteroidSpawnerCallback(Uint32 interval, void* param) {
+		Asteroid* asteroid = createAsteroid();
+		asteroids.push_back(asteroid);
+
+		// Call self with delay
+		Uint32 nextSpawn = (rand() % asteroidSpawnDelayMax) + asteroidSpawnDelayMin;
+		timerID_asteroidSpawner =
+			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, NULL);
+
+		return 0;
+	}
+}
+
 int main(int argc, char* args[]) {
-	using namespace Asteroids;
+	using namespace AsteroidsGame;
+	using namespace AsteroidManager;
 
 	if (init() && loadTextures()) {
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
 		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
 
 		createShip();
-
-		// TODO: Init game objects?
+		timerID_asteroidSpawner =
+			SDL_AddTimer(asteroidSpawnDelayMin * 1000, asteroidSpawnerCallback, NULL);
 
 		SDL_Event e;
 
 		bool quit = false;
 		while (!quit) {
+			// handle events
 			while (SDL_PollEvent(&e) != 0) {
 				if (e.type == SDL_QUIT) {
 					quit = true;
@@ -239,7 +324,7 @@ int main(int argc, char* args[]) {
 			if (timeTickNow >= timeNextTick) {
 				Uint32 timeDelta = timeTickNow - timeLastTick;
 
-				ship->tick(timeDelta);
+				tick(timeDelta);
 
 				timeLastTick = timeTickNow;
 				timeNextTick = timeTickNow + tickDelay;
@@ -248,11 +333,15 @@ int main(int argc, char* args[]) {
 			SDL_SetRenderDrawColor(TextureWrapper::renderer, 0x00, 0x00, 0x00, 0xff);
 			SDL_RenderClear(TextureWrapper::renderer);
 
-			ship->render();
+			render();
 
 			SDL_RenderPresent(TextureWrapper::renderer);
+		} // while gameloop
+
+		if (timerID_asteroidSpawner != NULL) {
+			SDL_RemoveTimer(timerID_asteroidSpawner);
 		}
-	}
+	} // if init success
 
 	close();
 

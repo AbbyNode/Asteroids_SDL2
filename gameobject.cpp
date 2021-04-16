@@ -12,8 +12,6 @@ GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height)
 	: textureWrapper(textureWrapper), width(width), height(height) {
 }
 
-GameObject::~GameObject() {}
-
 void GameObject::tick(float delta) {
 	float moveX = velX * delta;
 	float moveY = velY * delta;

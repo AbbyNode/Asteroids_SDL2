@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameobject.h"
+
 #include "texturewrapper.h"
 
 class PlayerShip : public GameObject {
