@@ -4,6 +4,9 @@
 
 class Asteroid : public GameObject {
 public:
+	static float speedMin;
+	static float speedMax;
+
 	static float spinMin;
 	static float spinMax;
 

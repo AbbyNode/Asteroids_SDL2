@@ -2,6 +2,9 @@
 
 #include "util.h"
 
+float Asteroid::speedMin = 0.05;
+float Asteroid::speedMax = 0.4;
+
 float Asteroid::spinMin = 0.1;
 float Asteroid::spinMax = 0.5;
 
@@ -27,12 +30,14 @@ Asteroid::Asteroid(TextureWrapper* textureWrapper, int width, int height)
 		break;
 	}
 
-	// TODO: Asteroid position
-	// Get random position
 	int posX = Asteroid::SCREEN_WIDTH / 2.0f;
 	int posY = Asteroid::SCREEN_HEIGHT / 2.0f;
 	setPosition(posX, posY);
 
+	int speedX = randomFloat(speedMin, speedMax);
+	int speedY = randomFloat(speedMin, speedMax);
+	addVelocity(speedX, speedY);
+
 	float spin = randomFloat(spinMin, spinMax);
-	setAngularMomentum(1);
+	setAngularMomentum(spin);
 }

@@ -4,8 +4,12 @@
 #include <random>
 
 namespace util {
-	static const double PI = atan(1) * 4;
-	static const double DEG_TO_RAD_MULT = PI / 180;
+	const double PI = atan(1) * 4;
+	const double DEG_TO_RAD_MULT = PI / 180;
+
+	std::mt19937 randomEngine;
+
+	//
 
 	float hypotenuse(float x, float y) {
 		return (float)sqrt(pow(x, 2) + pow(y, 2));
@@ -54,10 +58,12 @@ namespace util {
 	}
 
 	int randomInt(int min, int max) {
-		return (rand() % max) + min;
+		std::uniform_int_distribution<int> distribution(min, max);
+		return distribution(randomEngine);
 	}
 
 	float randomFloat(float min, float max) {
-		return 0.0f;
+		std::uniform_real_distribution<float> distribution(min, max);
+		return distribution(randomEngine);
 	}
 }

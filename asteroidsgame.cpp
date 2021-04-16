@@ -29,9 +29,9 @@ namespace AsteroidsGame {
 	SDL_Window* window = NULL;
 
 	int ticksPerSecond = 60;
-	Uint32 tickDelay = 1000 / ticksPerSecond; // delay in millis between ticks
-	Uint32 timeLastTick = 0;
-	Uint32 timeNextTick = 0;
+	uint32_t tickDelay = 1000 / ticksPerSecond; // delay in millis between ticks
+	uint32_t timeLastTick = 0;
+	uint32_t timeNextTick = 0;
 
 	enum class TextureName {
 		SHIP, BULLET, ASTEROID1, ASTEROID2, ASTEROID3
@@ -245,7 +245,7 @@ namespace AsteroidSpawner {
 	//
 
 	Asteroid* createAsteroid();
-	Uint32 asteroidSpawnerCallback(Uint32 interval, void* param);
+	uint32_t asteroidSpawnerCallback(uint32_t interval, void* param);
 
 	//
 
@@ -275,7 +275,7 @@ namespace AsteroidSpawner {
 		return new Asteroid(texture, randSize, randSize);
 	}
 
-	Uint32 asteroidSpawnerCallback(Uint32 interval, void* param) {
+	uint32_t asteroidSpawnerCallback(uint32_t interval, void* param) {
 		using AsteroidsGame::asteroids;
 
 		if (count < maxCount) {
@@ -284,7 +284,7 @@ namespace AsteroidSpawner {
 		}
 
 		// Call self with delay
-		Uint32 nextSpawn = util::randomInt(delayMin, delayMax);
+		uint32_t nextSpawn = util::randomInt(delayMin, delayMax);
 		timerID_asteroidSpawner =
 			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, NULL);
 
@@ -324,9 +324,9 @@ int main(int argc, char* args[]) {
 			}
 
 			// Tick (every tickDelay)
-			Uint32 timeTickNow = SDL_GetTicks();
+			uint32_t timeTickNow = SDL_GetTicks();
 			if (timeTickNow >= timeNextTick) {
-				Uint32 timeDelta = timeTickNow - timeLastTick;
+				uint32_t timeDelta = timeTickNow - timeLastTick;
 
 				tick(timeDelta);
 
