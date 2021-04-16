@@ -8,8 +8,10 @@
 int GameObject::SCREEN_HEIGHT = 0;
 int GameObject::SCREEN_WIDTH = 0;
 
-GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height)
+GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height, float collisionSizeRatio)
 	: textureWrapper(textureWrapper), width(width), height(height) {
+
+	collisionSize = (width >= height ? width : height) * collisionSizeRatio;
 }
 
 void GameObject::tick(float delta) {
@@ -19,12 +21,12 @@ void GameObject::tick(float delta) {
 	float newRotation = rotation + (angularMomentum * delta);
 	rotation = util::warpAngle(newRotation);
 
-	// Collisions?
-
 	float newPosX = posX + moveX;
 	float newPosY = posY + moveY;
-	newPosX = util::warpValue(newPosX, 0, SCREEN_WIDTH);
-	newPosY = util::warpValue(newPosY, 0, SCREEN_HEIGHT);
+	newPosX = util::warpValue(newPosX, -width, SCREEN_WIDTH);
+	newPosY = util::warpValue(newPosY, -height, SCREEN_HEIGHT);
+
+	// Collisions?
 
 	posX = newPosX;
 	posY = newPosY;

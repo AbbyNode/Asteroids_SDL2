@@ -39,10 +39,10 @@ namespace util {
 
 	float warpValue(float val, float min, float max) {
 		while (val > max) {
-			val -= max;
+			val -= (max - min);
 		}
 		while (val < min) {
-			val += max;
+			val += (max - min);
 		}
 		return val;
 	}

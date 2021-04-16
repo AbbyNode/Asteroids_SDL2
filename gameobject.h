@@ -7,7 +7,7 @@ public:
 	static int SCREEN_WIDTH;
 	static int SCREEN_HEIGHT;
 
-	GameObject(TextureWrapper* textureWrapper, int width, int height);
+	GameObject(TextureWrapper* textureWrapper, int width, int height, float collisionSizeRatio = 1);
 	
 	// 
 	virtual void tick(float delta);
@@ -30,6 +30,7 @@ protected:
 
 private:
 	int width, height;
+	float collisionSize;
 
 	float posX = 0, posY = 0;
 	float rotation = 0;

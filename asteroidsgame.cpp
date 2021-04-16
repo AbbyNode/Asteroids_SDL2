@@ -308,8 +308,10 @@ int main(int argc, char* args[]) {
 		createPlayerShip();
 
 		// Start spawning asteroids with timer
-		AsteroidSpawner::timerID_asteroidSpawner =
-			SDL_AddTimer(AsteroidSpawner::delayMin * 1000, AsteroidSpawner::asteroidSpawnerCallback, NULL);
+		{
+			using namespace AsteroidSpawner;
+			timerID_asteroidSpawner = SDL_AddTimer(delayMin * 1000, asteroidSpawnerCallback, NULL);
+		}
 
 		// Store events to handle
 		SDL_Event e;
