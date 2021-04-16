@@ -8,6 +8,8 @@ namespace util {
 
 	float hypotenuse(float x, float y);
 
+	float distance(float x1, float y1, float x2, float y2);
+
 	float toZero(float value, float change);
 
 	float warpValue(float val, float min, float max);

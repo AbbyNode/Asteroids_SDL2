@@ -1,6 +1,7 @@
 #include "gameobject.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "texturewrapper.h"
 #include "util.h"
@@ -15,21 +16,24 @@ GameObject::GameObject(TextureWrapper* textureWrapper, int width, int height, fl
 }
 
 void GameObject::tick(float delta) {
-	float moveX = velX * delta;
-	float moveY = velY * delta;
+	// Movement
+	float newPosX = posX + (velX * delta);
+	float newPosY = posY + (velY * delta);
+	posX = util::warpValue(newPosX, -width, SCREEN_WIDTH);;
+	posY = util::warpValue(newPosY, -height, SCREEN_HEIGHT);;
 
+	// Rotation
 	float newRotation = rotation + (angularMomentum * delta);
 	rotation = util::warpAngle(newRotation);
 
-	float newPosX = posX + moveX;
-	float newPosY = posY + moveY;
-	newPosX = util::warpValue(newPosX, -width, SCREEN_WIDTH);
-	newPosY = util::warpValue(newPosY, -height, SCREEN_HEIGHT);
-
-	// Collisions?
-
-	posX = newPosX;
-	posY = newPosY;
+	// Collisions
+	if (collidableGameObjects != nullptr) {
+		for (GameObject* gameObject : *collidableGameObjects) {
+			if (isColliding(gameObject)) {
+				collisionCallback(gameObject);
+			}
+		}
+	}
 }
 
 void GameObject::render() {
@@ -66,6 +70,15 @@ void GameObject::setMaxSpeed(float maxSpeed) {
 	this->maxSpeed = (maxSpeed >= 0) ? maxSpeed : 0;
 }
 
+void GameObject::setCollidableGameObjects(std::vector<GameObject*>* collidableGameObjects) {
+	this->collidableGameObjects = collidableGameObjects;
+}
+
+void GameObject::getPosition(float& x, float& y) {
+	x = posX;
+	y = posY;
+}
+
 float GameObject::getRotation() {
 	return rotation;
 }
@@ -74,7 +87,19 @@ float GameObject::getSpeed() {
 	return util::hypotenuse(velX, velY);
 }
 
+//
+
 void GameObject::setPosition(float x, float y) {
 	posX = x;
 	posY = y;
+}
+
+void GameObject::collisionCallback(GameObject* gameObject) {}
+
+//
+
+bool GameObject::isColliding(GameObject* gameObject) {
+	float distanceBetweenCenters = util::distance(posX, posY, gameObject->posX, gameObject->posY);
+	float largestCollisionDistance = collisionSize + gameObject->collisionSize;
+	return distanceBetweenCenters <= largestCollisionDistance;
 }

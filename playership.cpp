@@ -33,6 +33,12 @@ void PlayerShip::tick(float delta) {
 	GameObject::tick(delta);
 }
 
+void PlayerShip::collisionCallback(GameObject* gameObject) {
+	// TODO: Game over
+}
+
+//
+
 void PlayerShip::accelerate(bool toggle) {
 	accelerating = toggle;
 }

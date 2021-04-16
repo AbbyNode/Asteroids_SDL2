@@ -15,6 +15,10 @@ namespace util {
 		return (float)sqrt(pow(x, 2) + pow(y, 2));
 	}
 
+	float distance(float x1, float y1, float x2, float y2) {
+		return (float)sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+	}
+
 	float toZero(float value, float change) {
 		float newValue = value + change;
 
@@ -56,6 +60,8 @@ namespace util {
 		x = cos(angleRad);
 		y = sin(angleRad);
 	}
+
+	//
 
 	void initRandom(unsigned seed) {
 		randomEngine = new std::mt19937(seed);

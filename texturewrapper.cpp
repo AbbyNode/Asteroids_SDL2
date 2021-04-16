@@ -2,15 +2,15 @@
 
 #include <SDL.h>
 
-SDL_Renderer* TextureWrapper::renderer = NULL;
+SDL_Renderer* TextureWrapper::renderer = nullptr;
 
 TextureWrapper::TextureWrapper(SDL_Texture* texture, SDL_Rect* textureClip)
 	: texture(texture), textureClip(textureClip) {}
 
 TextureWrapper::~TextureWrapper() {
 	SDL_DestroyTexture(texture);
-	texture = NULL;
-	textureClip = NULL;
+	texture = nullptr;
+	textureClip = nullptr;
 }
 
 void TextureWrapper::render(SDL_Rect* dest, double angle, SDL_Point* center, SDL_RendererFlip flip) {

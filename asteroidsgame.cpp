@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -27,7 +28,7 @@ namespace AsteroidsGame {
 	const string RESOURCES_DIR = "resources/";
 	const string RESOURCES_EXT = ".png";
 
-	SDL_Window* window = NULL;
+	SDL_Window* window = nullptr;
 
 	int ticksPerSecond = 60;
 	uint32_t tickDelay = 1000 / ticksPerSecond; // delay in millis between ticks
@@ -39,9 +40,11 @@ namespace AsteroidsGame {
 	};
 	unordered_map<TextureName, TextureWrapper*> textures;
 
-	PlayerShip* playerShip = NULL;
+	PlayerShip* playerShip = nullptr;
 
-	vector<Asteroid*> asteroids;
+	vector<GameObject*> asteroids;
+
+	vector<GameObject*> bullets;
 
 #pragma endregion variables
 
@@ -53,6 +56,7 @@ namespace AsteroidsGame {
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
 	bool createPlayerShip();
+	bool shootBullet();
 
 	void tick(float delta);
 	void render();
@@ -71,13 +75,13 @@ namespace AsteroidsGame {
 		}
 
 		window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-		if (window == NULL) {
+		if (window == nullptr) {
 			err("Window Create");
 			return false;
 		}
 
 		TextureWrapper::renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-		if (TextureWrapper::renderer == NULL) {
+		if (TextureWrapper::renderer == nullptr) {
 			err("Renderer Create");
 			return false;
 		}
@@ -97,10 +101,10 @@ namespace AsteroidsGame {
 		textures.clear();
 
 		SDL_DestroyRenderer(TextureWrapper::renderer);
-		TextureWrapper::renderer = NULL;
+		TextureWrapper::renderer = nullptr;
 
 		SDL_DestroyWindow(window);
-		window = NULL;
+		window = nullptr;
 
 		IMG_Quit();
 		SDL_Quit();
@@ -109,15 +113,15 @@ namespace AsteroidsGame {
 	//
 
 	SDL_Texture* loadTextureFromFile(string path) {
-		SDL_Texture* texture = NULL;
+		SDL_Texture* texture = nullptr;
 
 		SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-		if (loadedSurface == NULL) {
+		if (loadedSurface == nullptr) {
 			err("Img load");
 		}
 		else {
 			texture = SDL_CreateTextureFromSurface(TextureWrapper::renderer, loadedSurface);
-			if (texture == NULL) {
+			if (texture == nullptr) {
 				err("Texture Create");
 			}
 
@@ -135,12 +139,12 @@ namespace AsteroidsGame {
 
 			// Load texture
 			SDL_Texture* texture = loadTextureFromFile(path);
-			if (texture == NULL) {
+			if (texture == nullptr) {
 				return false;
 			}
 
 			// Store texture into hashmap
-			textures[name] = new TextureWrapper(texture, NULL);
+			textures[name] = new TextureWrapper(texture, nullptr);
 			return true;
 		};
 
@@ -167,7 +171,12 @@ namespace AsteroidsGame {
 
 	bool createPlayerShip() {
 		playerShip = new PlayerShip(textures[TextureName::SHIP]);
-		return (playerShip != NULL);
+		playerShip->setCollidableGameObjects(&asteroids);
+		return (playerShip != nullptr);
+	}
+
+	bool shootBullet() {
+		return true;
 	}
 
 	//
@@ -175,17 +184,17 @@ namespace AsteroidsGame {
 	void tick(float delta) {
 		playerShip->tick(delta);
 
-		for (Asteroid* asteroid : asteroids) {
+		for (GameObject* asteroid : asteroids) {
 			asteroid->tick(delta);
 		}
 	}
 
 	void render() {
-		playerShip->render();
-
-		for (Asteroid* asteroid : asteroids) {
+		for (GameObject* asteroid : asteroids) {
 			asteroid->render();
 		}
+
+		playerShip->render();
 	}
 
 	bool handleKeyboardEvent(SDL_Event const& e) {
@@ -254,7 +263,7 @@ namespace AsteroidSpawner {
 		using AsteroidsGame::textures;
 
 		// Get random texture
-		TextureWrapper* texture = NULL;
+		TextureWrapper* texture = nullptr;
 		int randTexture = util::randomInt(0, 2);
 		switch (randTexture) {
 		case 0:
@@ -286,7 +295,7 @@ namespace AsteroidSpawner {
 		// Call self with delay
 		uint32_t nextSpawn = util::randomInt(delayMin, delayMax);
 		timerID_asteroidSpawner =
-			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, NULL);
+			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, nullptr);
 
 		return 0;
 	}
@@ -310,7 +319,7 @@ int main(int argc, char* args[]) {
 		// Start spawning asteroids with timer
 		{
 			using namespace AsteroidSpawner;
-			timerID_asteroidSpawner = SDL_AddTimer(delayMin * 1000, asteroidSpawnerCallback, NULL);
+			timerID_asteroidSpawner = SDL_AddTimer(delayMin * 1000, asteroidSpawnerCallback, nullptr);
 		}
 
 		// Store events to handle

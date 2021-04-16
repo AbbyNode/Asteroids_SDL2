@@ -8,7 +8,8 @@ class PlayerShip : public GameObject {
 public:
 	PlayerShip(TextureWrapper* textureWrapper);
 
-	virtual void tick(float delta);
+	void tick(float delta);
+	void collisionCallback(GameObject* gameObject);
 
 	void accelerate(bool toggle);
 	void decelerate(bool toggle);
