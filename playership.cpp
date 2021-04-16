@@ -4,10 +4,10 @@
 #include "texturewrapper.h"
 #include "util.h"
 
-PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 32, 32) {
-	setMaxSpeed(0.5);
-	turnSpeed = 0.3;
-	accelerationPerSecond = 0.0005;
+PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 64, 64) {
+	setMaxSpeed(0.5f);
+	turnSpeed = 0.3f;
+	accelerationPerSecond = 0.0005f;
 
 	float x = (GameObject::SCREEN_WIDTH / 2.0f) - 16;
 	float y = (GameObject::SCREEN_HEIGHT / 2.0f) - 16;

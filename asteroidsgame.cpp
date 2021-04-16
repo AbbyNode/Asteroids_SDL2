@@ -9,10 +9,17 @@
 #include <SDL_image.h>
 
 #include "asteroid.h"
+#include "bullet.h"
 #include "gameobject.h"
 #include "playership.h"
 #include "texturewrapper.h"
 #include "util.h"
+
+namespace BulletSpawner {
+	bool shoot();
+}
+
+//
 
 namespace AsteroidsGame {
 	using std::string;
@@ -21,8 +28,8 @@ namespace AsteroidsGame {
 
 #pragma region variables
 
-	const int SCREEN_WIDTH = 640;
-	const int SCREEN_HEIGHT = 480;
+	const int SCREEN_WIDTH = 960;
+	const int SCREEN_HEIGHT = 720;
 	const char* TITLE = "Asteroids";
 
 	const string RESOURCES_DIR = "resources/";
@@ -56,7 +63,6 @@ namespace AsteroidsGame {
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
 	bool createPlayerShip();
-	bool shootBullet();
 
 	void tick(float delta);
 	void render();
@@ -97,6 +103,7 @@ namespace AsteroidsGame {
 
 	void close() {
 		delete playerShip;
+		bullets.clear();
 		asteroids.clear();
 		textures.clear();
 
@@ -175,14 +182,14 @@ namespace AsteroidsGame {
 		return (playerShip != nullptr);
 	}
 
-	bool shootBullet() {
-		return true;
-	}
-
 	//
 
 	void tick(float delta) {
 		playerShip->tick(delta);
+
+		for (GameObject* bullet : bullets) {
+			bullet->tick(delta);
+		}
 
 		for (GameObject* asteroid : asteroids) {
 			asteroid->tick(delta);
@@ -192,6 +199,10 @@ namespace AsteroidsGame {
 	void render() {
 		for (GameObject* asteroid : asteroids) {
 			asteroid->render();
+		}
+
+		for (GameObject* bullet : bullets) {
+			bullet->render();
 		}
 
 		playerShip->render();
@@ -222,6 +233,10 @@ namespace AsteroidsGame {
 				playerShip->turn(toggle, true);
 				//playerShip->addVelocity(0.1, 0);
 				break;
+
+			case SDLK_SPACE:
+				BulletSpawner::shoot();
+				break;
 			}
 
 			return true;
@@ -246,8 +261,8 @@ namespace AsteroidSpawner {
 	int delayMin = 2; // seconds
 	int delayMax = 8;
 
-	int sizeMin = 32;
-	int sizeMax = 128;
+	int sizeMin = 64;
+	int sizeMax = 192;
 
 	SDL_TimerID timerID_asteroidSpawner = NULL;
 
@@ -298,6 +313,52 @@ namespace AsteroidSpawner {
 			SDL_AddTimer(nextSpawn * 1000, asteroidSpawnerCallback, nullptr);
 
 		return 0;
+	}
+}
+
+namespace BulletSpawner {
+	int maxCount = 8;
+
+	float speed = 0.6f;
+
+	int delay = 0.5f * 1000; // milliseconds
+
+	std::chrono::system_clock::time_point timeNextShot;
+
+	//
+
+	bool shoot() {
+		using std::chrono::system_clock;
+		using std::chrono::milliseconds;
+
+		using AsteroidsGame::asteroids;
+		using AsteroidsGame::bullets;
+		using AsteroidsGame::playerShip;
+		using AsteroidsGame::TextureName;
+		using AsteroidsGame::textures;
+
+		// Room for more
+		if (bullets.size() < maxCount) {
+			// Enough time passed
+			system_clock::time_point timeNow = system_clock::now();
+			if (timeNow >= timeNextShot) {
+				// Get position
+				float x, y;
+				playerShip->getPosition(x, y);
+
+				// Get velocity
+				// ??
+
+				// Spawn bullet
+				Bullet* bullet = new Bullet(textures[TextureName::BULLET], x, y, 1, 1);
+				bullets.push_back(bullet);
+
+				timeNextShot = timeNow + milliseconds(delay);
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 
