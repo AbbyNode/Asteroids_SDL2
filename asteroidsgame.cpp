@@ -16,6 +16,10 @@
 #include "texturewrapper.h"
 #include "util.h"
 
+namespace AsteroidSpawner {
+	SDL_TimerID timerID_asteroidSpawner = NULL;
+}
+
 namespace BulletSpawner {
 	bool shoot();
 }
@@ -35,6 +39,8 @@ namespace AsteroidsGame {
 
 	const string RESOURCES_DIR = "resources/";
 	const string RESOURCES_EXT = ".png";
+
+	bool gameOver = false;
 
 	SDL_Window* window = nullptr;
 
@@ -64,11 +70,17 @@ namespace AsteroidsGame {
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
 	void unloadTextures();
+
 	bool createPlayerShip();
+	void endGame();
 
 	void tick(float delta);
 	void render();
 	bool handleKeyboardEvent(SDL_Event const& e);
+
+	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject);
+	bool removeAsteroid(GameObject* asteroid);
+	bool removeBullet(GameObject* bullet);
 
 	void err(string msg);
 
@@ -191,12 +203,31 @@ namespace AsteroidsGame {
 		delete textures[TextureName::ASTEROID3];
 	}
 
+	//
+
 	bool createPlayerShip() {
 		playerShip = new PlayerShip(textures[TextureName::SHIP]);
 		playerShip->setCollision(&asteroids, [](GameObject* gameObject) {
-			// TODO: Game over
+			removeAsteroid(gameObject);
+			if (!gameOver) {
+				endGame();
+			}
 		});
 		return (playerShip != nullptr);
+	}
+
+	void endGame() {
+		gameOver = true;
+
+		playerShip->setAngularMomentum(1.0f);
+		playerShip->accelerate(true);
+
+		if (AsteroidSpawner::timerID_asteroidSpawner != NULL) {
+			SDL_RemoveTimer(AsteroidSpawner::timerID_asteroidSpawner);
+		}
+
+		// TODO: Spawn text
+
 	}
 
 	//
@@ -264,6 +295,29 @@ namespace AsteroidsGame {
 
 	//
 
+	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject) {
+		using std::swap;
+
+		auto it = std::find(vec.begin(), vec.end(), gameObject);
+		if (it != vec.end()) {
+			swap(*it, vec.back());
+			vec.pop_back();
+			return true;
+		}
+
+		return false;
+	}
+
+	bool removeAsteroid(GameObject* asteroid) {
+		return removeFromVector(AsteroidsGame::asteroids, asteroid);
+	}
+
+	bool removeBullet(GameObject* bullet) {
+		return removeFromVector(AsteroidsGame::bullets, bullet);
+	}
+
+	//
+
 	void err(string msg) {
 		printf("Error | %s\n%s", msg.c_str(), SDL_GetError());
 		//printf("Error | %s\n%s\n%s", msg.c_str(), SDL_GetError(), IMG_GetError());
@@ -280,8 +334,6 @@ namespace AsteroidSpawner {
 
 	int sizeMin = 64;
 	int sizeMax = 192;
-
-	SDL_TimerID timerID_asteroidSpawner = NULL;
 
 	//
 
@@ -344,16 +396,14 @@ namespace BulletSpawner {
 
 	bool spawnBullet();
 
-	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject);
-	bool removeAsteroid(GameObject* asteroid);
-	bool removeBullet(GameObject* bullet);
-
 	//
 
 	bool spawnBullet() {
 		using AsteroidsGame::asteroids;
 		using AsteroidsGame::bullets;
 		using AsteroidsGame::playerShip;
+		using AsteroidsGame::removeAsteroid;
+		using AsteroidsGame::removeBullet;
 		using AsteroidsGame::TextureName;
 		using AsteroidsGame::textures;
 
@@ -385,26 +435,6 @@ namespace BulletSpawner {
 		return true;
 	}
 
-	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject) {
-		using std::swap;
-
-		auto it = std::find(vec.begin(), vec.end(), gameObject);
-		if (it != vec.end()) {
-			swap(*it, vec.back());
-			vec.pop_back();
-			return true;
-		}
-
-		return false;
-	}
-
-	bool removeAsteroid(GameObject* asteroid) {
-		return removeFromVector(AsteroidsGame::asteroids, asteroid);
-	}
-
-	bool removeBullet(GameObject* bullet) {
-		return removeFromVector(AsteroidsGame::bullets, bullet);
-	}
 
 	bool shoot() {
 		using std::chrono::milliseconds;
@@ -463,7 +493,9 @@ int main(int argc, char* args[]) {
 					quit = true;
 				}
 				else {
-					handleKeyboardEvent(e);
+					if (!gameOver) {
+						handleKeyboardEvent(e);
+					}
 				}
 			}
 
