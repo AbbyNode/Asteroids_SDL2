@@ -73,7 +73,7 @@ namespace AsteroidsGame {
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
 	void unloadTextures();
-	void loadFont();
+	bool loadFont();
 
 	bool createPlayerShip();
 	void endGame();
@@ -218,14 +218,21 @@ namespace AsteroidsGame {
 		delete textures[TextureName::ASTEROID3];
 	}
 
-	void loadFont() {
+	bool loadFont() {
 		string text = "GAME OVER!";
 		SDL_Color color = { 0xff, 0xff, 0xff, 0xff };
+
 		font = TTF_OpenFont(RESOURCES_FONT.c_str(), 28);
+		if (font == nullptr) {
+			err("Font file");
+			return false;
+		}
+
 		SDL_Surface* fontSurface = TTF_RenderText_Solid(font, text.c_str(), color);
 		if (fontSurface != nullptr) {
 			fontTexture = SDL_CreateTextureFromSurface(TextureWrapper::renderer, fontSurface);
 			SDL_FreeSurface(fontSurface);
+			return true;
 		}
 	}
 
