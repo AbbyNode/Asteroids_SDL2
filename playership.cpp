@@ -4,7 +4,7 @@
 #include "texturewrapper.h"
 #include "util.h"
 
-PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 64, 64) {
+PlayerShip::PlayerShip(TextureWrapper* textureWrapper) : GameObject(textureWrapper, 64, 64, 0.8f) {
 	setMaxSpeed(0.5f);
 	turnSpeed = 0.3f;
 	accelerationPerSecond = 0.0005f;
@@ -31,10 +31,6 @@ void PlayerShip::tick(float delta) {
 	}
 
 	GameObject::tick(delta);
-}
-
-void PlayerShip::collisionCallback(GameObject* gameObject) {
-	// TODO: Game over
 }
 
 //

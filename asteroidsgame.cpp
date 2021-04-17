@@ -7,6 +7,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 #include "asteroid.h"
 #include "bullet.h"
@@ -62,6 +63,7 @@ namespace AsteroidsGame {
 
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
+	void unloadTextures();
 	bool createPlayerShip();
 
 	void tick(float delta);
@@ -103,9 +105,14 @@ namespace AsteroidsGame {
 
 	void close() {
 		delete playerShip;
+
 		bullets.clear();
 		asteroids.clear();
+
+		unloadTextures();
 		textures.clear();
+
+		//
 
 		SDL_DestroyRenderer(TextureWrapper::renderer);
 		TextureWrapper::renderer = nullptr;
@@ -176,9 +183,19 @@ namespace AsteroidsGame {
 		return success;
 	}
 
+	void unloadTextures() {
+		delete textures[TextureName::SHIP];
+		delete textures[TextureName::BULLET];
+		delete textures[TextureName::ASTEROID1];
+		delete textures[TextureName::ASTEROID2];
+		delete textures[TextureName::ASTEROID3];
+	}
+
 	bool createPlayerShip() {
 		playerShip = new PlayerShip(textures[TextureName::SHIP]);
-		playerShip->setCollidableGameObjects(&asteroids);
+		playerShip->setCollision(&asteroids, [](GameObject* gameObject) {
+			// TODO: Game over
+		});
 		return (playerShip != nullptr);
 	}
 
@@ -317,43 +334,94 @@ namespace AsteroidSpawner {
 }
 
 namespace BulletSpawner {
+	using std::vector;
+	using std::chrono::system_clock;
+
 	int maxCount = 8;
-
 	float speed = 0.6f;
-
 	int delay = 0.5f * 1000; // milliseconds
+	system_clock::time_point timeNextShot;
 
-	std::chrono::system_clock::time_point timeNextShot;
+	bool spawnBullet();
+
+	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject);
+	bool removeAsteroid(GameObject* asteroid);
+	bool removeBullet(GameObject* bullet);
 
 	//
 
-	bool shoot() {
-		using std::chrono::system_clock;
-		using std::chrono::milliseconds;
-
+	bool spawnBullet() {
 		using AsteroidsGame::asteroids;
 		using AsteroidsGame::bullets;
 		using AsteroidsGame::playerShip;
 		using AsteroidsGame::TextureName;
 		using AsteroidsGame::textures;
 
+		// Get position
+		float x, y;
+		playerShip->getPosition(x, y);
+
+		// Create velocity
+		float velX, velY;
+		util::coordFromAngle(playerShip->getRotation(), velX, velY);
+		velX *= speed;
+		velY *= speed;
+
+		// Spawn bullet
+		Bullet* bullet = new Bullet(textures[TextureName::BULLET], x, y, velX, velY
+			, [](GameObject* thisBullet) { // Destroy callback
+			removeBullet(thisBullet);
+		});
+
+		// Add to array of bullets
+		bullets.push_back(bullet);
+
+		// Set up collision with asteroids
+		bullet->setCollision(&asteroids, [bullet](GameObject* gameObject) {
+			removeAsteroid(gameObject);
+			removeBullet(bullet);
+		});
+
+		return true;
+	}
+
+	bool removeFromVector(vector<GameObject*>& vec, GameObject* gameObject) {
+		using std::swap;
+
+		auto it = std::find(vec.begin(), vec.end(), gameObject);
+		if (it != vec.end()) {
+			swap(*it, vec.back());
+			vec.pop_back();
+			return true;
+		}
+
+		return false;
+	}
+
+	bool removeAsteroid(GameObject* asteroid) {
+		return removeFromVector(AsteroidsGame::asteroids, asteroid);
+	}
+
+	bool removeBullet(GameObject* bullet) {
+		return removeFromVector(AsteroidsGame::bullets, bullet);
+	}
+
+	bool shoot() {
+		using std::chrono::milliseconds;
+
+		using AsteroidsGame::bullets;
+
 		// Room for more
 		if (bullets.size() < maxCount) {
 			// Enough time passed
 			system_clock::time_point timeNow = system_clock::now();
 			if (timeNow >= timeNextShot) {
-				// Get position
-				float x, y;
-				playerShip->getPosition(x, y);
+				
+				spawnBullet();
 
-				// Get velocity
-				// ??
-
-				// Spawn bullet
-				Bullet* bullet = new Bullet(textures[TextureName::BULLET], x, y, 1, 1);
-				bullets.push_back(bullet);
-
+				// Store time for next shot
 				timeNextShot = timeNow + milliseconds(delay);
+
 				return true;
 			}
 		}

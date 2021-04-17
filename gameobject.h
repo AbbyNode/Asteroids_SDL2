@@ -2,6 +2,7 @@
 
 #include "texturewrapper.h"
 
+#include <functional>
 #include <vector>
 
 class GameObject {
@@ -23,7 +24,8 @@ public:
 
 	void setMaxSpeed(float maxSpeed);
 
-	void setCollidableGameObjects(std::vector<GameObject*>* collidableGameObjects);
+	void setCollision(std::vector<GameObject*>* collidableGameObjects
+		, std::function<void(GameObject* gameObject)> collisionCallback);
 
 	void getPosition(float& x, float& y);
 	float getRotation();
@@ -31,7 +33,6 @@ public:
 
 protected:
 	void setPosition(float x, float y);
-	virtual void collisionCallback(GameObject* gameObject);
 
 private:
 	TextureWrapper* textureWrapper = nullptr;
@@ -47,7 +48,8 @@ private:
 
 	float maxSpeed = 10000;
 
-	std::vector<GameObject*>* collidableGameObjects;
+	std::vector<GameObject*>* collidableGameObjects = nullptr;
+	std::function<void(GameObject* gameObject)> collisionCallback;
 
 	bool isColliding(GameObject* gameObject);
 };

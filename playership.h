@@ -9,7 +9,6 @@ public:
 	PlayerShip(TextureWrapper* textureWrapper);
 
 	void tick(float delta);
-	void collisionCallback(GameObject* gameObject);
 
 	void accelerate(bool toggle);
 	void decelerate(bool toggle);

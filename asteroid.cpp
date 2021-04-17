@@ -9,7 +9,7 @@ float Asteroid::spinMin = 0.1f;
 float Asteroid::spinMax = 0.5f;
 
 Asteroid::Asteroid(TextureWrapper* textureWrapper, int width, int height)
-	: GameObject(textureWrapper, width, height) {
+	: GameObject(textureWrapper, width, height, 0.4f) {
 	using util::randomInt;
 	using util::randomFloat;
 

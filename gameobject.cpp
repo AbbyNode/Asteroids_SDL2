@@ -70,10 +70,6 @@ void GameObject::setMaxSpeed(float maxSpeed) {
 	this->maxSpeed = (maxSpeed >= 0) ? maxSpeed : 0;
 }
 
-void GameObject::setCollidableGameObjects(std::vector<GameObject*>* collidableGameObjects) {
-	this->collidableGameObjects = collidableGameObjects;
-}
-
 void GameObject::getPosition(float& x, float& y) {
 	x = posX;
 	y = posY;
@@ -87,6 +83,12 @@ float GameObject::getSpeed() {
 	return util::hypotenuse(velX, velY);
 }
 
+void GameObject::setCollision(std::vector<GameObject*>* collidableGameObjects
+	, std::function<void(GameObject* gameObject)> collisionCallback) {
+	this->collidableGameObjects = collidableGameObjects;
+	this->collisionCallback = collisionCallback;
+}
+
 //
 
 void GameObject::setPosition(float x, float y) {
@@ -94,12 +96,15 @@ void GameObject::setPosition(float x, float y) {
 	posY = y;
 }
 
-void GameObject::collisionCallback(GameObject* gameObject) {}
-
 //
 
 bool GameObject::isColliding(GameObject* gameObject) {
-	float distanceBetweenCenters = util::distance(posX, posY, gameObject->posX, gameObject->posY);
+	float centerX1 = posX + (width / 2.0f);
+	float centerY1 = posY + (height / 2.0f);
+	float centerX2 = gameObject->posX + (gameObject->width / 2.0f);
+	float centerY2 = gameObject->posY + (gameObject->height / 2.0f);
+
+	float distanceBetweenCenters = util::distance(centerX1, centerY1, centerX2, centerY2);
 	float largestCollisionDistance = collisionSize + gameObject->collisionSize;
 	return distanceBetweenCenters <= largestCollisionDistance;
 }
