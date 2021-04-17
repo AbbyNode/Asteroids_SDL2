@@ -39,6 +39,7 @@ namespace AsteroidsGame {
 
 	const string RESOURCES_DIR = "resources/";
 	const string RESOURCES_EXT = ".png";
+	const string RESOURCES_FONT = RESOURCES_DIR + "font/alatsi/Alatsi-Regular.ttf";
 
 	bool gameOver = false;
 
@@ -55,10 +56,12 @@ namespace AsteroidsGame {
 	unordered_map<TextureName, TextureWrapper*> textures;
 
 	PlayerShip* playerShip = nullptr;
-
+	vector<GameObject*> bullets;
 	vector<GameObject*> asteroids;
 
-	vector<GameObject*> bullets;
+	TTF_Font* font = nullptr;
+	SDL_Texture* fontTexture = nullptr;
+	const SDL_Rect fontDest = { 50, SCREEN_HEIGHT - 200, SCREEN_WIDTH - 100, 150 };
 
 #pragma endregion variables
 
@@ -70,6 +73,7 @@ namespace AsteroidsGame {
 	SDL_Texture* loadTextureFromFile(string path);
 	bool loadTextures();
 	void unloadTextures();
+	void loadFont();
 
 	bool createPlayerShip();
 	void endGame();
@@ -112,17 +116,27 @@ namespace AsteroidsGame {
 			return false;
 		}
 
+		if (TTF_Init() == -1) {
+			err("TTF Init");
+			return false;
+		}
+
 		return true;
 	}
 
 	void close() {
 		delete playerShip;
-
 		bullets.clear();
 		asteroids.clear();
 
 		unloadTextures();
 		textures.clear();
+
+		SDL_DestroyTexture(fontTexture);
+		fontTexture = nullptr;
+
+		TTF_CloseFont(font);
+		font = nullptr;
 
 		//
 
@@ -132,6 +146,7 @@ namespace AsteroidsGame {
 		SDL_DestroyWindow(window);
 		window = nullptr;
 
+		TTF_Quit();
 		IMG_Quit();
 		SDL_Quit();
 	}
@@ -203,6 +218,17 @@ namespace AsteroidsGame {
 		delete textures[TextureName::ASTEROID3];
 	}
 
+	void loadFont() {
+		string text = "GAME OVER!";
+		SDL_Color color = { 0xff, 0xff, 0xff, 0xff };
+		font = TTF_OpenFont(RESOURCES_FONT.c_str(), 28);
+		SDL_Surface* fontSurface = TTF_RenderText_Solid(font, text.c_str(), color);
+		if (fontSurface != nullptr) {
+			fontTexture = SDL_CreateTextureFromSurface(TextureWrapper::renderer, fontSurface);
+			SDL_FreeSurface(fontSurface);
+		}
+	}
+
 	//
 
 	bool createPlayerShip() {
@@ -225,9 +251,6 @@ namespace AsteroidsGame {
 		if (AsteroidSpawner::timerID_asteroidSpawner != NULL) {
 			SDL_RemoveTimer(AsteroidSpawner::timerID_asteroidSpawner);
 		}
-
-		// TODO: Spawn text
-
 	}
 
 	//
@@ -254,6 +277,10 @@ namespace AsteroidsGame {
 		}
 
 		playerShip->render();
+
+		if (gameOver) {
+			SDL_RenderCopy(TextureWrapper::renderer, fontTexture, NULL, &fontDest);
+		}
 	}
 
 	bool handleKeyboardEvent(SDL_Event const& e) {
@@ -320,7 +347,6 @@ namespace AsteroidsGame {
 
 	void err(string msg) {
 		printf("Error | %s\n%s", msg.c_str(), SDL_GetError());
-		//printf("Error | %s\n%s\n%s", msg.c_str(), SDL_GetError(), IMG_GetError());
 	}
 
 #pragma endregion functions
@@ -330,7 +356,7 @@ namespace AsteroidSpawner {
 	int maxCount = 4;
 
 	int delayMin = 2; // seconds
-	int delayMax = 8;
+	int delayMax = 6;
 
 	int sizeMin = 64;
 	int sizeMax = 192;
@@ -465,6 +491,9 @@ int main(int argc, char* args[]) {
 
 	// Init and load
 	if (init() && loadTextures()) {
+		// Load font
+		loadFont();
+
 		// Setup GameObject statics
 		GameObject::SCREEN_HEIGHT = SCREEN_HEIGHT;
 		GameObject::SCREEN_WIDTH = SCREEN_WIDTH;
